@@ -1,12 +1,11 @@
 """Сеанс эмулятора: состояние и выполнение введённых строк."""
 
-from typing import NamedTuple
+from typing import NamedTuple, Optional
 
 from src.commands import find_command
 from src.errors import ShellError
 from src.lexer import split_line
-
-DEFAULT_VFS_NAME = "novfs"
+from src.settings import Settings
 
 
 class Reply(NamedTuple):
@@ -19,9 +18,10 @@ class Reply(NamedTuple):
 class Session:
     """Хранит состояние оболочки и выполняет команды."""
 
-    def __init__(self, vfs_name: str = DEFAULT_VFS_NAME) -> None:
-        """Создаёт сеанс с именем VFS и корневым текущим каталогом."""
-        self.vfs_name = vfs_name
+    def __init__(self, settings: Optional[Settings] = None) -> None:
+        """Создаёт сеанс по параметрам запуска."""
+        self.settings = settings or Settings()
+        self.vfs_name = self.settings.vfs_name()
         self.cwd = "/"
         self.running = True
 

@@ -9,6 +9,7 @@ from src.session import Session
 INPUT_MARK = "input_start"
 WINDOW_SIZE = "800x480"
 CLOSE_DELAY_MS = 500
+SCRIPT_STEP_MS = 350
 FONT = ("Courier New", 12)
 COLORS = {
     "back": "#fdf6e3",
@@ -25,6 +26,7 @@ class TerminalWindow:
     def __init__(self, session: Session) -> None:
         """Создаёт окно, текстовое поле и первое приглашение."""
         self.session = session
+        self.pending: list[str] = []
         self.root = tk.Tk()
         self.root.title(session.title())
         self.root.geometry(WINDOW_SIZE)
@@ -61,6 +63,28 @@ class TerminalWindow:
         self.text.insert("end", text, tag)
         self.text.see("end")
 
+    def show_notes(self, lines: list[str], tag: str = "note") -> None:
+        """Печатает служебные строки перед текущим приглашением."""
+        self.text.delete("end-1l linestart", "end-1c")
+        for line in lines:
+            self.write(line + "\n", tag)
+        self.show_prompt()
+
+    def play_script(self, lines: list[str]) -> None:
+        """Выполняет строки скрипта по очереди, имитируя ввод."""
+        self.pending = list(lines)
+        self.root.after(SCRIPT_STEP_MS, self._play_next_line)
+
+    def _play_next_line(self) -> None:
+        """Печатает и выполняет очередную строку скрипта."""
+        if not self.pending or not self.session.running:
+            self.pending = []
+            return
+        line = self.pending.pop(0)
+        self.write(line, "note" if line.lstrip().startswith("#") else "")
+        self.submit(line)
+        self.root.after(SCRIPT_STEP_MS, self._play_next_line)
+
     def show_prompt(self) -> None:
         """Печатает приглашение и запоминает начало области ввода."""
         self.write(self.session.prompt(), "prompt")
@@ -91,12 +115,15 @@ class TerminalWindow:
 
     def _on_key(self, _event: tk.Event) -> Optional[str]:
         """Не даёт редактировать уже выведенный текст."""
+        if self.pending:
+            return "break"
         self._keep_cursor_in_input()
         return None
 
     def _on_enter(self, _event: tk.Event) -> str:
         """Отправляет набранную строку на выполнение."""
-        self.submit(self.typed_text())
+        if not self.pending:
+            self.submit(self.typed_text())
         return "break"
 
     def _on_step_back(self, _event: tk.Event) -> Optional[str]:

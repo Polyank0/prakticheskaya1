@@ -3,6 +3,7 @@
 import unittest
 
 from src.session import Session
+from src.settings import Settings
 
 
 class SessionTest(unittest.TestCase):
@@ -10,7 +11,7 @@ class SessionTest(unittest.TestCase):
 
     def test_title_and_prompt_contain_vfs_name(self) -> None:
         """Имя VFS входит в заголовок окна и приглашение."""
-        session = Session("disk_a")
+        session = Session(Settings(vfs_path="images/disk_a.csv"))
         self.assertIn("disk_a", session.title())
         self.assertEqual(session.prompt(), "disk_a:/$ ")
 

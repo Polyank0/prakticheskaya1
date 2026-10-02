@@ -16,3 +16,11 @@ def run_exit(session: "Session", args: list[str]) -> str:
         raise ShellError("exit: too many arguments")
     session.running = False
     return ""
+
+
+@command("conf-dump")
+def run_conf_dump(session: "Session", args: list[str]) -> str:
+    """Выводит параметры эмулятора в формате ключ=значение."""
+    if args:
+        raise ShellError("conf-dump: too many arguments")
+    return session.settings.dump()
