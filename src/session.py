@@ -3,8 +3,10 @@
 from typing import NamedTuple, Optional
 
 from src.commands import find_command
+from src.csv_source import load_csv
 from src.errors import ShellError
 from src.lexer import split_line
+from src.memory_fs import ROOT, MemoryFs, VfsError
 from src.settings import Settings
 
 
@@ -22,8 +24,20 @@ class Session:
         """Создаёт сеанс по параметрам запуска."""
         self.settings = settings or Settings()
         self.vfs_name = self.settings.vfs_name()
-        self.cwd = "/"
+        self.cwd = ROOT
         self.running = True
+        self.fs = MemoryFs()
+        self.problems: list[str] = []
+        self._load_vfs()
+
+    def _load_vfs(self) -> None:
+        """Загружает VFS в память; ошибку загрузки запоминает."""
+        if not self.settings.vfs_path:
+            return
+        try:
+            self.fs = load_csv(self.settings.vfs_path)
+        except VfsError as error:
+            self.problems.append(f"VFS not loaded: {error}")
 
     def title(self) -> str:
         """Возвращает заголовок окна с именем VFS."""

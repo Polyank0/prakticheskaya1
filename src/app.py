@@ -18,6 +18,9 @@ def main() -> None:
     session = Session(read_settings())
     window = TerminalWindow(session)
     window.show_notes(debug_lines(session))
+    if session.problems:
+        problems = [f"[error] {text}" for text in session.problems]
+        window.show_notes(problems, "error")
     script_path = session.settings.script_path
     if script_path:
         try:

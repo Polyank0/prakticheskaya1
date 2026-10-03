@@ -1,0 +1,3 @@
+path,type,data
+/ok.txt,file,b2sK
+/bad.txt,file,***not-base64***

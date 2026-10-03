@@ -1,0 +1,9 @@
+path,type,data
+/etc,dir,
+/etc/motd,file,V2VsY29tZSB0byBkZWVwIFZGUwo=
+/home/student/projects/shell,dir,
+/home/student/projects/shell/main.py,file,cHJpbnQoJ2hpJykK
+/home/student/projects/shell/log.txt,file,ZTAxCmUwMgplMDMKZTA0CmUwNQplMDYKZTA3CmUwOAplMDkKZTEwCmUxMQplMTIK
+/home/student/projects/plan.txt,file,c3RhZ2UgMQpzdGFnZSAyCnN0YWdlIDMK
+/home/student/photo.bin,file,AP8QgAc=
+/var/log,dir,
