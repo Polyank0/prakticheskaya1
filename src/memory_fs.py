@@ -76,3 +76,16 @@ class MemoryFs:
             if entry.startswith(prefix) and entry != path
         ]
         return sorted(name for name in names if "/" not in name)
+
+    def copy(self, source: str, target: str) -> None:
+        """Копирует файл или каталог со всем содержимым в памяти."""
+        prefix = source.rstrip("/") + "/"
+        for path in self.paths():
+            if path != source and not path.startswith(prefix):
+                continue
+            new_path = target + path[len(source):]
+            data = self._entries[path]
+            if data is None:
+                self.add_dir(new_path)
+            else:
+                self.add_file(new_path, data)

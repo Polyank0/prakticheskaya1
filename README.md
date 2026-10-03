@@ -2,7 +2,7 @@
 
 Практическая работа №1 по дисциплине «Конфигурационное управление».
 
-Готовность: этап 4 из 5 (основные команды).
+Готовность: этап 5 из 5 (дополнительные команды).
 
 ## Общее описание
 
@@ -20,6 +20,7 @@
 - стартовый скрипт: на экране видны и команды, и ответы;
 - VFS из CSV-файла, содержимое файлов хранится в base64;
 - история команд: команда `history`, клавиши «вверх» и «вниз»;
+- копирование файлов и каталогов внутри VFS без записи на диск;
 - сообщения об ошибках выделяются красным цветом.
 
 ## Функции и настройки
@@ -50,6 +51,8 @@
 | `tail [-n ЧИСЛО] ФАЙЛ...` | последние строки файлов, по умолчанию 10 |
 | `history [ЧИСЛО]` | список введённых команд или последние ЧИСЛО команд |
 | `history -c` | очистка истории |
+| `cp ИСТОЧНИК... ЦЕЛЬ` | копирование файлов в памяти |
+| `cp -r ИСТОЧНИК... ЦЕЛЬ` | копирование каталогов вместе с содержимым |
 | `conf-dump` | параметры эмулятора в формате `ключ=значение` |
 | `vfs-info` | служебная команда: источник и дерево VFS |
 | `exit` | завершение работы |
@@ -99,7 +102,7 @@ path,type,data
 
 ```bat
 rem запуск эмулятора
-run.bat --vfs vfs\deep.csv --script startup\stage4.txt
+run.bat --vfs vfs\several.csv --script startup\stage5.txt
 
 rem модульные тесты
 test.bat
@@ -118,11 +121,11 @@ python -m unittest discover -s tests -t . -v
 - `os_tests\params_errors.bat` — неверные пути в параметрах;
 - `os_tests\vfs_variants.bat` — минимальная VFS, несколько файлов, три уровня;
 - `os_tests\vfs_errors.bat` — отсутствующий и испорченный файл VFS;
-- `os_tests\commands.bat` — стартовые скрипты этапов с командами;
+- `os_tests\commands.bat` — стартовые скрипты этапов с командами.
 
 Каждый вызов открывает окно. Следующий вызов начинается после закрытия окна.
 
-Стартовые скрипты для проверки команд: `startup/stage2.txt`, `startup/stage3.txt`, `startup/stage4.txt`.
+Стартовые скрипты для проверки команд: `startup/stage2.txt`, `startup/stage3.txt`, `startup/stage4.txt`, `startup/stage5.txt`.
 
 ## Примеры использования
 
@@ -142,6 +145,16 @@ cat: nothing.txt: No such file or directory
 several:/docs$ history 2
     5  cat nothing.txt
     6  history 2
+several:/docs$ cp todo.txt /todo_copy.txt
+several:/docs$ cp -r /docs /backup
+several:/docs$ ls /
+backup/
+docs/
+empty/
+readme.txt
+todo_copy.txt
+several:/docs$ cp /docs /again
+cp: -r not specified; omitting directory '/docs'
 ```
 
 Запуск с параметрами:

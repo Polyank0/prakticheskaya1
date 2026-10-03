@@ -1,0 +1,30 @@
+# Этап 5: команда cp (VFS vfs/several.csv)
+ls
+# Копия файла под новым именем
+cp readme.txt copy.txt
+cat copy.txt
+# Файл в каталог и несколько файлов в каталог
+cp readme.txt docs
+cp docs/todo.txt docs/notes.txt empty
+ls docs empty
+# Замена существующего файла
+cp docs/todo.txt copy.txt
+cat copy.txt
+# Каталог целиком: под новым именем и внутрь существующего каталога
+cp -r docs backup
+cp -r docs empty
+ls -l backup
+ls empty/docs
+# Все изменения только в памяти: vfs-info показывает новое дерево
+vfs-info
+# Ошибки
+cp
+cp readme.txt
+cp nothing.txt copy.txt
+cp docs backup2
+cp readme.txt readme.txt
+cp -r docs docs/inner
+cp readme.txt /nowhere/file.txt
+cp readme.txt copy.txt docs/todo.txt
+cp -r docs readme.txt
+cp -x readme.txt a.txt
