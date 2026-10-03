@@ -26,6 +26,7 @@ class Session:
         self.vfs_name = self.settings.vfs_name()
         self.cwd = ROOT
         self.running = True
+        self.history: list[str] = []
         self.fs = MemoryFs()
         self.problems: list[str] = []
         self._load_vfs()
@@ -53,6 +54,7 @@ class Session:
             words = split_line(line)
             if not words:
                 return Reply("", False)
+            self.history.append(line.strip())
             handler = find_command(words[0])
             return Reply(handler(self, words[1:]), False)
         except ShellError as error:

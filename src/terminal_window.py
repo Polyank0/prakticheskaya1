@@ -27,6 +27,7 @@ class TerminalWindow:
         """Создаёт окно, текстовое поле и первое приглашение."""
         self.session = session
         self.pending: list[str] = []
+        self.recall = 0
         self.root = tk.Tk()
         self.root.title(session.title())
         self.root.geometry(WINDOW_SIZE)
@@ -55,8 +56,8 @@ class TerminalWindow:
         self.text.bind("<BackSpace>", self._on_step_back)
         self.text.bind("<Left>", self._on_step_back)
         self.text.bind("<Home>", self._on_home)
-        self.text.bind("<Up>", self._ignore_key)
-        self.text.bind("<Down>", self._ignore_key)
+        self.text.bind("<Up>", self._on_up)
+        self.text.bind("<Down>", self._on_down)
 
     def write(self, text: str, tag: str = "") -> None:
         """Дописывает текст в конец поля и прокручивает к нему."""
@@ -91,6 +92,7 @@ class TerminalWindow:
         self.text.mark_set(INPUT_MARK, "end-1c")
         self.text.mark_gravity(INPUT_MARK, "left")
         self.text.mark_set("insert", "end")
+        self.recall = len(self.session.history)
 
     def typed_text(self) -> str:
         """Возвращает текст, набранный после приглашения."""
@@ -138,9 +140,25 @@ class TerminalWindow:
         self.text.mark_set("insert", INPUT_MARK)
         return "break"
 
-    def _ignore_key(self, _event: tk.Event) -> str:
-        """Отключает клавишу, чтобы курсор не уходил из области ввода."""
+    def _recall(self, step: int) -> str:
+        """Подставляет в область ввода команду из истории."""
+        if self.pending:
+            return "break"
+        items = self.session.history
+        self.recall = min(max(self.recall + step, 0), len(items))
+        self.text.delete(INPUT_MARK, "end-1c")
+        if self.recall < len(items):
+            self.write(items[self.recall])
+        self.text.mark_set("insert", "end")
         return "break"
+
+    def _on_up(self, _event: tk.Event) -> str:
+        """Показывает предыдущую команду из истории."""
+        return self._recall(-1)
+
+    def _on_down(self, _event: tk.Event) -> str:
+        """Показывает следующую команду из истории."""
+        return self._recall(1)
 
     def run(self) -> None:
         """Запускает цикл обработки событий окна."""

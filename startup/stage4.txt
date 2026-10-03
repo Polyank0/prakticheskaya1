@@ -1,0 +1,42 @@
+# Этап 4: команды ls, cd, cat, tail, history (VFS vfs/deep.csv)
+# ls: текущий каталог, подробный вид, несколько путей, файл
+ls
+ls -l /home/student
+ls /etc /var
+ls /etc/motd
+# cd: относительный путь, две точки, без аргумента, абсолютный путь
+cd home/student/projects
+ls
+cd shell
+cd ..
+cd
+cd /home/student/projects/shell
+# cat: один файл и несколько файлов
+cat main.py
+cat /etc/motd ../plan.txt
+# tail: 10 строк по умолчанию, -n, несколько файлов
+tail log.txt
+tail -n 3 log.txt
+tail -n 2 log.txt ../plan.txt
+# history: последние команды и весь список
+history 3
+history
+# Ошибки ls и cd
+ls /nowhere
+ls -x
+cd /etc/motd
+cd /nowhere
+cd a b
+# Ошибки cat и tail
+cat
+cat /etc
+cat nothing.txt
+tail
+tail -n
+tail -n many log.txt
+tail /home
+# Ошибки history, затем очистка
+history abc
+history 1 2
+history -c
+history

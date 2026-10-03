@@ -1,4 +1,4 @@
-"""Тесты сеанса: приглашение, заглушки, выход, ошибки."""
+"""Тесты сеанса: приглашение, выход, ошибки."""
 
 import unittest
 
@@ -14,17 +14,6 @@ class SessionTest(unittest.TestCase):
         session = Session(Settings(vfs_path="images/disk_a.csv"))
         self.assertIn("disk_a", session.title())
         self.assertEqual(session.prompt(), "disk_a:/$ ")
-
-    def test_ls_stub_prints_arguments(self) -> None:
-        """Заглушка ls выводит имя и аргументы."""
-        reply = Session().run_line("ls -l /home")
-        self.assertFalse(reply.failed)
-        self.assertEqual(reply.text, "ls: stub, arguments: -l | /home")
-
-    def test_cd_stub_without_arguments(self) -> None:
-        """Заглушка cd сообщает об отсутствии аргументов."""
-        reply = Session().run_line("cd")
-        self.assertEqual(reply.text, "cd: stub, no arguments")
 
     def test_empty_line(self) -> None:
         """Пустая строка ничего не делает."""
