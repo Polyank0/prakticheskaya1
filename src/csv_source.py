@@ -10,34 +10,42 @@ COLUMNS = ("path", "type", "data")
 FIRST_DATA_LINE = 2
 
 
-def decode_data(text: str, line: int) -> bytes:
+def decode_data(text: str) -> bytes:
     """Раскодирует содержимое файла из base64."""
     try:
         return base64.b64decode(text.encode("ascii"), validate=True)
     except (binascii.Error, UnicodeEncodeError) as error:
-        raise VfsError(f"line {line}: invalid base64 data") from error
+        raise VfsError("invalid base64 data") from error
+
+
+def read_path(row: dict) -> str:
+    """Возвращает абсолютный путь элемента из строки CSV."""
+    raw_path = (row.get("path") or "").strip()
+    if not raw_path.startswith(ROOT):
+        raise VfsError("path must start with '/'")
+    return resolve(ROOT, raw_path)
+
+
+def store_entry(target: MemoryFs, path: str, row: dict) -> None:
+    """Создаёт каталог или файл по типу, указанному в строке CSV."""
+    kind = (row.get("type") or "").strip()
+    if kind == "dir":
+        target.add_dir(path)
+    elif kind == "file":
+        target.add_file(path, decode_data(row.get("data") or ""))
+    else:
+        raise VfsError(f"unknown type '{kind}'")
 
 
 def add_row(target: MemoryFs, row: dict, line: int) -> None:
-    """Добавляет в файловую систему элемент из одной строки CSV."""
-    raw_path = (row.get("path") or "").strip()
-    kind = (row.get("type") or "").strip()
-    if not raw_path.startswith(ROOT):
-        raise VfsError(f"line {line}: path must start with '/'")
-    path = resolve(ROOT, raw_path)
-    if target.exists(path) and path != ROOT:
-        raise VfsError(f"line {line}: duplicate path {path}")
+    """Добавляет элемент из строки CSV; к ошибке дописывает номер строки."""
     try:
-        if kind == "dir":
-            target.add_dir(path)
-        elif kind == "file":
-            target.add_file(path, decode_data(row.get("data") or "", line))
-        else:
-            raise VfsError(f"line {line}: unknown type '{kind}'")
+        path = read_path(row)
+        if target.exists(path) and path != ROOT:
+            raise VfsError(f"duplicate path {path}")
+        store_entry(target, path, row)
     except VfsError as error:
-        prefix = f"line {line}: "
-        text = str(error)
-        raise VfsError(text if text.startswith(prefix) else prefix + text)
+        raise VfsError(f"line {line}: {error}") from error
 
 
 def read_rows(path: str) -> list[dict]:

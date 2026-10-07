@@ -55,14 +55,33 @@ def copy_one(
     session.fs.copy(source, target)
 
 
+def split_operands(args: list[str]) -> tuple[bool, list[str]]:
+    """Отделяет ключ -r от путей и отклоняет неизвестные ключи."""
+    deep = False
+    operands = []
+    for arg in args:
+        if arg in RECURSIVE_FLAGS:
+            deep = True
+        elif arg.startswith("-"):
+            raise ShellError(f"cp: invalid option '{arg}'")
+        else:
+            operands.append(arg)
+    return deep, operands
+
+
+def check_destination(
+    session: "Session", sources: list[str], destination: str
+) -> None:
+    """Проверяет, что несколько источников копируются в каталог."""
+    to_dir = session.fs.is_dir(resolve(session.cwd, destination))
+    if len(sources) > 1 and not to_dir:
+        raise ShellError(f"cp: target '{destination}' is not a directory")
+
+
 @command("cp")
 def run_cp(session: "Session", args: list[str]) -> str:
     """Копирует файлы; с ключом -r копирует каталоги с содержимым."""
-    deep = any(arg in RECURSIVE_FLAGS for arg in args)
-    operands = [arg for arg in args if arg not in RECURSIVE_FLAGS]
-    for operand in operands:
-        if operand.startswith("-"):
-            raise ShellError(f"cp: invalid option '{operand}'")
+    deep, operands = split_operands(args)
     if not operands:
         raise ShellError("cp: missing file operand")
     sources, destination = operands[:-1], operands[-1]
@@ -70,9 +89,7 @@ def run_cp(session: "Session", args: list[str]) -> str:
         raise ShellError(
             f"cp: missing destination file operand after '{destination}'"
         )
-    to_dir = session.fs.is_dir(resolve(session.cwd, destination))
-    if len(sources) > 1 and not to_dir:
-        raise ShellError(f"cp: target '{destination}' is not a directory")
+    check_destination(session, sources, destination)
     for name in sources:
         copy_one(session, name, destination, deep)
     return ""
